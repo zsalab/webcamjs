@@ -92,10 +92,6 @@ var Webcam = {
 		window.URL = window.URL || window.webkitURL || window.mozURL || window.msURL;
 		this.userMedia = this.userMedia && !!this.mediaDevices && !!window.URL;
 		
-		if (this.iOS) {
-			this.userMedia = null;
-		}
-		
 		// Older versions of firefox (< 21) apparently claim support but user media does not actually work
 		if (navigator.userAgent.match(/Firefox\D+(\d+)/)) {
 			if (parseInt(RegExp.$1, 10) < 21) this.userMedia = null;
@@ -274,6 +270,7 @@ var Webcam = {
 			// setup webcam video container
 			var video = document.createElement('video');
 			video.setAttribute('autoplay', 'autoplay');
+			video.setAttribute('playsinline', 'playsinline');
 			video.style.width = '' + this.params.dest_width + 'px';
 			video.style.height = '' + this.params.dest_height + 'px';
 			
@@ -316,7 +313,11 @@ var Webcam = {
 					self.dispatch('live');
 					self.flip();
 				};
-				video.src = window.URL.createObjectURL( stream ) || stream;
+				if (!self.iOS) {
+					video.src = window.URL.createObjectURL( stream ) || stream;
+				} else {
+					video.srcObject = stream;
+				}
 			})
 			.catch( function(err) {
 				// JH 2016-07-31 Instead of dispatching error, now falling back to Flash if userMedia fails (thx @john2014)
