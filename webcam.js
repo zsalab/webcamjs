@@ -1,4 +1,4 @@
-// WebcamJS v1.0.23
+// WebcamJS v1.0.24
 // Webcam library for capturing JPEG/PNG images in JavaScript
 // Attempts getUserMedia, falls back to Flash
 // Author: Joseph Huckaby: http://github.com/jhuckaby
@@ -34,7 +34,7 @@ FlashError.prototype = new IntermediateInheritor();
 WebcamError.prototype = new IntermediateInheritor();
 
 var Webcam = {
-	version: '1.0.23',
+	version: '1.0.24',
 	
 	// globals
 	protocol: location.protocol.match(/https/i) ? 'https' : 'http',
@@ -313,10 +313,14 @@ var Webcam = {
 					self.dispatch('live');
 					self.flip();
 				};
-				if (!self.iOS) {
-					video.src = window.URL.createObjectURL( stream ) || stream;
-				} else {
-					video.srcObject = stream;
+				// as window.URL.createObjectURL() is deprecated, adding a check so that it works in Safari.
+				// older browsers may not have srcObject
+				if ("srcObject" in video) {
+				  	video.srcObject = stream;
+				}
+				else {
+				  	// using URL.createObjectURL() as fallback for old browsers
+				  	video.src = window.URL.createObjectURL(stream);
 				}
 			})
 			.catch( function(err) {
